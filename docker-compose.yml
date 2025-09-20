@@ -5,10 +5,10 @@ services:
     container_name: yt-dlp-api
     restart: unless-stopped
     ports:
-      - "3000:3000" # host:container
+      - "4111:4111" # host:container
     environment:
       DOWNLOADS_DIR: /downloads
       MAX_FILESIZE: 50M
       VIDEO_TTL_SECONDS: 300
-      PORT: 3000
+      PORT: 4111 
       BIND_ADDR: 0.0.0.0
