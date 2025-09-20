@@ -64,9 +64,7 @@ async function cleanupDownloads() {
     }
   }
 
-  console.log(`Checking dir for old videos ${downloadsDir}`);
   const files = await readdir(downloadsDir);
-  console.log(`Checking dir with ${files.length} files`);
   files.forEach(async (f) => {
     if (!f || !f.name) {
       return
