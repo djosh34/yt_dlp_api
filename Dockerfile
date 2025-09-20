@@ -1,18 +1,14 @@
-FROM python:3.11-slim
-
-ENV PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        ffmpeg \
-        ca-certificates \
-        && rm -rf /var/lib/apt/lists/*
-
-RUN pip install yt-dlp==2025.8.11
+FROM oven/bun:1 as base
 
 WORKDIR /app
 
-COPY main.py main.py
+RUN apt-get update && apt-get install -y curl 
 
-CMD ["bash"]
+COPY package.json tsconfig.json ./
+
+RUN bun install
+
+COPY src ./src
+
+
+CMD ["bun", "src/index.ts"]
