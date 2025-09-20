@@ -47,7 +47,6 @@ async function updateYtDlp() {
 // ---- Cleanup Function ----
 async function cleanupDownloads() {
   const now = Date.now();
-  const files = await readdir(downloadsDir);
 
   for (const [id, entry] of Object.entries(videoMap)) {
     const ageSec = (now - entry.startTime) / 1000;
@@ -56,15 +55,22 @@ async function cleanupDownloads() {
         console.log(`Killing process for old video ${id}`);
         entry.proc.kill();
       }
-      console.log(`Deleting old video ${id}`);
-      if (await Bun.file(entry.filePath).exists()) {
-        await Bun.remove(entry.filePath).catch(() => {});
+      console.log(`Deleting old video ${id} from path ${entry.filePath}`);
+      const bun_file = Bun.file(entry.filePath)
+      if (await bun_file.exists()) {
+        await bun_file.delete()
       }
       delete videoMap[id];
     }
   }
 
-  for (const f of files) {
+  console.log(`Checking dir for old videos ${downloadsDir}`);
+  const files = await readdir(downloadsDir);
+  console.log(`Checking dir with ${files.length} files`);
+  files.forEach(async (f) => {
+    if (!f || !f.name) {
+      return
+    }
     const fullPath = `${downloadsDir}/${f.name}`;
     const tracked = Object.values(videoMap).some(
       (e) => e.filePath === fullPath,
@@ -73,9 +79,9 @@ async function cleanupDownloads() {
       console.log(`Deleting orphan file ${f.name}`);
       try {
         await Bun.remove(fullPath);
-      } catch {}
+      } catch { }
     }
-  }
+  })
 }
 
 function checkUrl(url: string) {
@@ -182,8 +188,8 @@ async function main() {
             entry.state === "failed"
               ? 409
               : entry.state === "downloading" || entry.state === "started"
-              ? 202
-              : 409;
+                ? 202
+                : 409;
           return Response.json({ status: entry.state }, { status: statusCode });
         }
 
